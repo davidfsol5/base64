@@ -1,8 +1,13 @@
 #include "base64.hpp"
+#include "exceptions.hpp"
+#include <memory>
+#include <sstream>
+#include <iostream>
 
 using namespace gsc::utility;
+using namespace std;
 
-const Base64::codeRow Base64::_CodePage[64] = 
+const Base64::codeRow Base64::_CodePage[ 64 ] = 
 {
     { 0b000000, 'A' }, { 0b000001, 'B' }, { 0b000010, 'C' }, { 0b000011, 'D'},
     { 0b000100, 'E' }, { 0b000101, 'F' }, { 0b000110, 'G' }, { 0b000111, 'H'},
@@ -22,12 +27,64 @@ const Base64::codeRow Base64::_CodePage[64] =
     { 0b111100, '8' }, { 0b111101, '9' }, { 0b111110, '+' }, { 0b111111, '/'} 
 };
 
-std::string& encode( std::istream& cleartext, std::string& ciphertext )
+string& Base64::encode( istream& cleartext, string& ciphertext )
 {
+    if ( cleartext.bad() )
+    {
+        throw invalid_argument( "Base64::encode first parameter, clearText, refers to a bad stream." );
+    }
+
+    char byte1;
+    char byte2;
+    char byte3;
+    unique_ptr<codeJig> jig;
+    ostringstream ciphertextBuilder;
+    
+    while ( cleartext.get( byte1 ) )
+    {
+        if ( cleartext.get( byte2 ) )
+        {
+            if ( cleartext.get( byte3 ) )
+            {
+                jig = std::make_unique< codeJig >( byte1, byte2, byte3 );
+            } else {
+                jig = std::make_unique< codeJig >( byte1, byte2 );
+           }
+        } else {
+            jig = std::make_unique< codeJig >( byte1 );
+        }
+        cout << jig->_CipherText << endl;
+        ciphertextBuilder << jig->_CipherText;
+    }
+    cout <<endl;
+
+    ciphertext = ciphertextBuilder.str( );
     return ciphertext;
 }
 
-std::ostream& decode( const std::string& ciphertext, std::ostream& cleartext )
+ostream& Base64::decode( const string& ciphertext, ostream& cleartext )
 {
     return cleartext;
 }
+
+const Base64::cipherIndex Base64::lookupCipherIndex( const char cipherChar )
+{
+    int index = -1;
+
+    for ( int i = 0; i < 64; ++i)
+    {
+        if ( cipherChar == Base64::_CodePage[ i ]._CipherSubstitute )
+        {
+            index = Base64::_CodePage[ i ]._ClearBitPattern;
+            break;
+        }
+    }
+
+    if ( (index & 0b111111) != index )
+    {
+        throw out_of_range( "Base64::lookupIndex failed. Invalid ciphertext.");
+    }
+    
+    return index;
+};
+

@@ -16,10 +16,10 @@ test-base64.exe: test-base64.o base64.o
 
 # The *.o targets can be written more simply
 
-test-base64.o: test-base64.cpp base64.hpp exceptions.hpp
+test-base64.o: test-base64.cpp base64-mask.hpp
 	$(CXX) $(CXXFLAGS) -c test-base64.cpp
 
-base64.o: base64.cpp base64.hpp exceptions.hpp
+base64.o: base64.cpp base64-mask.hpp
 
 clean:
 	 del *.o *.exe

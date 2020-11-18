@@ -8,7 +8,7 @@
             "name": "MinGW - Build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}\\covid19-poc.exe",
+            "program": "${fileDirname}\\test-base64.exe",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",

@@ -24,13 +24,13 @@ int main(int argc, char const *argv[])
 {
     ostringstream decodedCleartext;
 
-    Base64::decode( canonicalCiphertext, decodedCleartext );
-    assert( decodedCleartext.str() == canonicalCleartext );
-
     string encodedCiphertext;
     istringstream cleartext( canonicalCleartext );
     Base64::encode( cleartext, encodedCiphertext );
     assert( encodedCiphertext == canonicalCiphertext );
+
+    Base64::decode( canonicalCiphertext, decodedCleartext );
+    assert( decodedCleartext.str() == canonicalCleartext );
 
     return 0;
 }
