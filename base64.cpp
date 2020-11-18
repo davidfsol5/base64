@@ -53,10 +53,8 @@ string& Base64::encode( istream& cleartext, string& ciphertext )
         } else {
             jig = std::make_unique< codeJig >( byte1 );
         }
-        cout << jig->_CipherText << endl;
         ciphertextBuilder << jig->_CipherText;
     }
-    cout <<endl;
 
     ciphertext = ciphertextBuilder.str( );
     return ciphertext;
@@ -80,11 +78,9 @@ ostream& Base64::decode( const string& ciphertext, ostream& cleartext )
         {
             if ( jig->isOctetUsed( i ) )
             {
-                cout << jig->_QuantaOverlay._Cleartext.getQuantumValue( i );
                 cleartext << jig->_QuantaOverlay._Cleartext.getQuantumValue( i );
             }
         }
-        cout << endl;
     }
     
     return cleartext;
@@ -111,23 +107,17 @@ const Base64::cipherIndex Base64::lookupCipherIndex( const char cipherChar )
     return index;
 };
 
-void Octets::setQuantumValue( const int index, const unsigned char value )
+void Octets::setQuantumValue( const unsigned int index, const unsigned char value )
 {
-    std::cout << "Octets::setQuantumValue( " << index << ", " << value << " (0x" << std::hex << value << ") )..." << std::endl;
-    std::cout << "_Scope = " << std::hex << _Scope << std::endl;
     if ( (index >= 0) && (index < _QuantumNumber) )
     {
         if ( (value & Octets::_QuantumMask) == value )
         {
             unsigned int offset = (_QuantumNumber - 1 - index) * _OffsetQuantum;
-            std::cout << std::dec << offset << " = (" << _QuantumNumber << " - 1 - " << index << ") x " << _OffsetQuantum << std::endl;
             unsigned int mask = 0;
             mask = _QuantumMask << offset;
-            std::cout << std::hex << mask << " = " << _QuantumMask << " << " << std::dec << offset << std::endl;
             unsigned int scopedValue = 0;
             scopedValue = value << offset;
-            std::cout << std::hex << scopedValue << " = " << value << " << " << std::dec << offset << std::endl;
-            std::cout << std::hex << ((_Scope & (~mask)) | scopedValue) << " = " << (_Scope & ~(mask)) << " | " << scopedValue << std::endl;
             _Scope = (_Scope & (~mask)) | scopedValue;
         } else {
             throw std::out_of_range( "Octets::setQuantumValue parameter is out of range: value must be a value between 0 and 255." );
@@ -137,20 +127,16 @@ void Octets::setQuantumValue( const int index, const unsigned char value )
     }
 };
 
-const unsigned char Octets::getQuantumValue( const int index )
+const unsigned char Octets::getQuantumValue( const unsigned int index )
 {
-    std::cout << "Octets::getQuantumValue( " << index << " )" << std::endl;
     unsigned int unscopedValue = 0;
 
     if ( (index >= 0) && (index < _QuantumNumber) )
     {
             unsigned int offset = (_QuantumNumber - 1 - index) * _OffsetQuantum;
-            std::cout << std::dec << offset << " = (" << _QuantumNumber << " - 1 - " << index << ") x " << _OffsetQuantum << std::endl;
             unsigned int mask = 0;
             mask = (_QuantumMask << offset);
-            std::cout << std::hex << mask << " = (" << _QuantumMask << " << " << std::dec << offset << ")" << std::endl;
             unscopedValue = (_Scope & mask) >> offset;
-            std::cout << std::hex << unscopedValue << " = (" << _Scope << " & " << mask << ") >> " << std::dec << offset << std::endl;
     } else {
         throw std::out_of_range( "Octets::getQuantumValue parameter is out of range: index must be a value between 0 and 2." );
     }
@@ -158,23 +144,17 @@ const unsigned char Octets::getQuantumValue( const int index )
     return unscopedValue;
 };
 
-void Sextets::setQuantumValue( const int index, const unsigned char value )
+void Sextets::setQuantumValue( const unsigned int index, const unsigned char value )
 {
-    std::cout << "Sextets::setQuantumValue( " << index << ", " << value << " (0" << std::oct << value << ") )" << std::endl;
-    std::cout << "_Scope = " << std::oct << _Scope << std::endl;
     if ( (index >= 0) && (index < _QuantumNumber) )
     {
         if ( (value & _QuantumMask) == value )
         {
             unsigned int offset = (_QuantumNumber - 1 - index) * _OffsetQuantum;
-            std::cout << std::dec << offset << " = (" << _QuantumNumber << " - 1 - " << index << ") x " << _OffsetQuantum << std::endl;
             unsigned int mask = 0;
             mask = _QuantumMask << offset;
-            std::cout << std::oct << mask << " = " << _QuantumMask << " << " << std::dec << offset << std::endl;
             unsigned int scopedValue = 0;
             scopedValue = value << offset;
-            std::cout << std::oct << scopedValue << " = " << value << " << " << std::dec << offset << std::endl;
-            std::cout << std::oct << ((_Scope & (~mask)) | scopedValue) << " = " << (_Scope & ~(mask)) << " | " << scopedValue << std::endl;
             _Scope = (_Scope & (~mask)) | scopedValue;
         } else {
             throw std::out_of_range( "Sextets::setQuantumValue parameter is out of range: value must be a value between 0 and 63." );
@@ -184,20 +164,16 @@ void Sextets::setQuantumValue( const int index, const unsigned char value )
     }
 };
 
-const unsigned char Sextets::getQuantumValue( const int index )
+const unsigned char Sextets::getQuantumValue( const unsigned int index )
 {
-    std::cout << "Sextets::getQuantumValue( " << index << " )" << std::endl ;
     unsigned int unscopedValue = 0;
 
     if ( (index >= 0) && (index < _QuantumNumber) )
     {
             unsigned int offset = (_QuantumNumber - 1 - index) * _OffsetQuantum;
-            std::cout << std::dec << offset << " = (" << _QuantumNumber << " - 1 - " << index << ") x " << _OffsetQuantum << std::endl;
             unsigned int mask = 0;
             mask = (_QuantumMask << offset);
-            std::cout << std::oct << mask << " = (" << _QuantumMask << " << " << offset << ")" << std::endl;
             unscopedValue = (_Scope & mask) >> offset;
-            std::cout << std::oct << unscopedValue << " = (" << _Scope << " & " << mask << ") >> " << offset << std::endl;
     } else {
         throw std::out_of_range( "Sextets::getQuantumValue parameter is out of range: index must be a value between 0 and 3." );
     }

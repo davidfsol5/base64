@@ -20,8 +20,8 @@ namespace gsc::utility
     public:
         Octets( ) : _Scope( 0 ) { };
 
-        void setQuantumValue( const int index, const unsigned char value );
-        const unsigned char getQuantumValue( const int index );
+        void setQuantumValue( const unsigned int index, const unsigned char value );
+        const unsigned char getQuantumValue( const unsigned int index );
     };
 
     struct Sextets
@@ -34,8 +34,8 @@ namespace gsc::utility
     public:
         Sextets( ) : _Scope( 0 ) { };
 
-        void setQuantumValue( const int index, const unsigned char value );
-        const unsigned char getQuantumValue( const int index );
+        void setQuantumValue( const unsigned int index, const unsigned char value );
+        const unsigned char getQuantumValue( const unsigned int index );
     };
     
     class Base64
@@ -125,16 +125,12 @@ namespace gsc::utility
                 {
                     _QuantaOverlay._CipherIndexes.setQuantumValue( 2, Base64::lookupCipherIndex( cipherChar2 ) );
                     _OctetIsUsed[ 1 ] = true;
-                } else {
-                    std::cout << _CipherText[ 2 ];
                 }
 
                 if ( cipherChar3 != Base64::_Pad )
                 {
                     _QuantaOverlay._CipherIndexes.setQuantumValue( 3, Base64::lookupCipherIndex( cipherChar3 ) );;
                     _OctetIsUsed[ 2 ] = true;
-                } else {
-                    std::cout << _CipherText[ 3 ];
                 }
             };
         };

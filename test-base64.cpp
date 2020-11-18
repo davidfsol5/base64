@@ -28,11 +28,22 @@ int main(int argc, char const *argv[])
 
         string encodedCiphertext;
         istringstream cleartext( canonicalCleartext );
+        
         Base64::encode( cleartext, encodedCiphertext );
         assert( encodedCiphertext == canonicalCiphertext );
+        cout << "Base64::encode()..." << endl;
+        cout << "Cleartext:" << endl;
+        cout << cleartext.str( ) << endl;
+        cout << "Ciphertext:" << endl;
+        cout << encodedCiphertext << endl;
 
         Base64::decode( canonicalCiphertext, decodedCleartext );
         assert( decodedCleartext.str() == canonicalCleartext );
+        cout << "Base64::decode()..." << endl;
+        cout << "Ciphertext:" << endl;
+        cout << canonicalCiphertext << endl;
+        cout << "Cleartext:" << endl;
+        cout << decodedCleartext.str( ) << endl;
     }
     catch(const std::exception& e)
     {
