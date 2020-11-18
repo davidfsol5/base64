@@ -22,15 +22,23 @@ const string canonicalCiphertext =
 
 int main(int argc, char const *argv[])
 {
-    ostringstream decodedCleartext;
+    try
+    {
+        ostringstream decodedCleartext;
 
-    string encodedCiphertext;
-    istringstream cleartext( canonicalCleartext );
-    Base64::encode( cleartext, encodedCiphertext );
-    assert( encodedCiphertext == canonicalCiphertext );
+        string encodedCiphertext;
+        istringstream cleartext( canonicalCleartext );
+        Base64::encode( cleartext, encodedCiphertext );
+        assert( encodedCiphertext == canonicalCiphertext );
 
-    Base64::decode( canonicalCiphertext, decodedCleartext );
-    assert( decodedCleartext.str() == canonicalCleartext );
+        Base64::decode( canonicalCiphertext, decodedCleartext );
+        assert( decodedCleartext.str() == canonicalCleartext );
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+    
 
     return 0;
 }
