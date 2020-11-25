@@ -90,9 +90,10 @@ namespace gsc::utility
                 quantaOverlay( ) : _Cleartext( ) {};
             } _QuantaOverlay;
             bool _OctetIsUsed[ 3 ] = { false, false, false };
-            char _CipherText[ 5 ] = { 0 };
+            static const std::streamsize _CipherBlockLength = 4;
+            char _CipherText[ _CipherBlockLength + 1 ] = { 0 };
 
-        public:
+            static const bool getNextCipherBlock( std::istream& source, char& byte1, char& byte2, char& byte3, char& byte4 );
             const bool isOctetUsed( const int index ){ return _OctetIsUsed[ index ]; };
 
             codeJig( const unsigned char byte0, const unsigned char byte1, const unsigned char byte2 ) :
@@ -156,15 +157,17 @@ namespace gsc::utility
         };
 
     public:
-        static std::string& encode( std::istream&, std::string& );
+        static std::string& encode( std::istream&, unsigned int, std::string& );
+        static std::ostream& encode( std::istream&, unsigned int, std::ostream& );
         static std::ostream& decode( const std::string&, std::ostream& );
+        static std::ostream& decode( std::istream&, std::ostream& );
 
-        private:
-            //Base64 lacks a default constructor;
-            Base64( void ) = delete;
-            //Base64 is not copyable
-            Base64( const Base64& ) = delete;
-            Base64& operator=( const Base64& ) = delete;
+    private:
+        //Base64 lacks a default constructor;
+        Base64( void ) = delete;
+        //Base64 is not copyable
+        Base64( const Base64& ) = delete;
+        Base64& operator=( const Base64& ) = delete;
     };
 };
 

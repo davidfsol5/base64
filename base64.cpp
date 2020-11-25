@@ -47,7 +47,22 @@ const Base64::codeRow Base64::_CodePage[ 64 ] =
     { 0b111100, '8' }, { 0b111101, '9' }, { 0b111110, '+' }, { 0b111111, '/'} 
 };
 
-string& Base64::encode( istream& cleartext, string& ciphertext )
+string& Base64::encode( istream& cleartext, unsigned int maxLineLength, string& ciphertext )
+{
+    if ( cleartext.bad() )
+    {
+        throw invalid_argument( "Base64::encode first parameter, clearText, refers to a bad stream." );
+    }
+
+    ostringstream ciphertextBuilder;
+    
+    Base64::encode( cleartext, maxLineLength, ciphertextBuilder );
+
+    ciphertext = ciphertextBuilder.str( );
+    return ciphertext;
+}
+
+ostream& Base64::encode( istream& cleartext, unsigned int maxLineLength, ostream& ciphertext )
 {
     if ( cleartext.bad() )
     {
@@ -58,7 +73,7 @@ string& Base64::encode( istream& cleartext, string& ciphertext )
     char byte2;
     char byte3;
     unique_ptr<codeJig> jig;
-    ostringstream ciphertextBuilder;
+    int lineLength = 0;
     
     while ( cleartext.get( byte1 ) )
     {
@@ -73,35 +88,59 @@ string& Base64::encode( istream& cleartext, string& ciphertext )
         } else {
             jig = std::make_unique< codeJig >( byte1 );
         }
-        ciphertextBuilder << jig->_CipherText;
+        for ( int i = 0; i < Base64::codeJig::_CipherBlockLength; i++ )
+        {
+            if ( maxLineLength && (lineLength == maxLineLength) )
+            {
+                ciphertext << endl;
+                lineLength = 0;
+            }
+            ciphertext << jig->_CipherText[ i ];
+            lineLength++;
+        }
     }
 
-    ciphertext = ciphertextBuilder.str( );
     return ciphertext;
 }
 
 ostream& Base64::decode( const string& ciphertext, ostream& cleartext )
 {
+    istringstream cipherStream( ciphertext );
+
+    Base64::decode( cipherStream, cleartext );
+    
+    return cleartext;
+}
+
+ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
+{
     unique_ptr<codeJig> jig;
 
-    string::const_iterator iter = ciphertext.begin( );
-    while ( iter != ciphertext.end( ) )
+    char byte1;
+    char byte2;
+    char byte3;
+    char byte4;
+
+    do
     {
-        char byte1 = *iter++;
-        char byte2 = *iter++;
-        char byte3 = *iter++;
-        char byte4 = *iter++;
-
-        jig = make_unique< codeJig >( byte1, byte2, byte3, byte4 );
-
-        for ( int i = 0; i < 3; i++ )
+        if ( Base64::codeJig::getNextCipherBlock( ciphertext, byte1, byte2, byte3, byte4 ) )
         {
-            if ( jig->isOctetUsed( i ) )
+            jig = make_unique< codeJig >( byte1, byte2, byte3, byte4 );
+
+            for ( int i = 0; i < 3; i++ )
             {
-                cleartext << jig->_QuantaOverlay._Cleartext.getQuantumValue( i );
+                if ( jig->isOctetUsed( i ) )
+                {
+                    cleartext.put( jig->_QuantaOverlay._Cleartext.getQuantumValue( i ) );
+                }
             }
+
+            ciphertext.peek( );
+        } else 
+        {
+            throw invalid_argument( "Base64::decode first parameter, ciphertext, is not a valid base64 encoded stream." );
         }
-    }
+    } while ( !(ciphertext.eof( )) );
     
     return cleartext;
 }
@@ -125,7 +164,7 @@ const Base64::cipherIndex Base64::lookupCipherIndex( const char cipherChar )
     }
     
     return index;
-};
+}
 
 void Octets::setQuantumValue( const unsigned int index, const unsigned char value )
 {
@@ -145,7 +184,7 @@ void Octets::setQuantumValue( const unsigned int index, const unsigned char valu
     } else {
         throw std::out_of_range( "Octets::setQuantumValue parameter is out of range: index must be a value between 0 and 2." );
     }
-};
+}
 
 const unsigned char Octets::getQuantumValue( const unsigned int index )
 {
@@ -162,7 +201,7 @@ const unsigned char Octets::getQuantumValue( const unsigned int index )
     }
 
     return unscopedValue;
-};
+}
 
 void Sextets::setQuantumValue( const unsigned int index, const unsigned char value )
 {
@@ -182,7 +221,7 @@ void Sextets::setQuantumValue( const unsigned int index, const unsigned char val
     } else {
         throw std::out_of_range( "Sextets::setQuantumValue parameter is out of range: index must be a value between 0 and 2." );
     }
-};
+}
 
 const unsigned char Sextets::getQuantumValue( const unsigned int index )
 {
@@ -199,4 +238,27 @@ const unsigned char Sextets::getQuantumValue( const unsigned int index )
     }
 
     return unscopedValue;
-};
+}
+
+const bool Base64::codeJig::getNextCipherBlock( istream& source, char& byte1, char& byte2, char& byte3, char& byte4 )
+{
+    static string filter( "\r\n" );
+    char *cipherBlock[ Base64::codeJig::_CipherBlockLength ]  = { &byte1, &byte2, &byte3, &byte4 };
+    int i = 0;
+    char c = '\0';
+
+    do
+    {
+        if ( source.get( c ) )
+        {
+            // Skip byte if it is in the filter string
+            if ( filter.find( c ) == string::npos )
+            {
+                *(cipherBlock[ i ]) = c;
+                i++;
+            }
+        }
+    } while ( (i < Base64::codeJig::_CipherBlockLength) && source.good( ) );
+    
+    return i == Base64::codeJig::_CipherBlockLength;
+}
