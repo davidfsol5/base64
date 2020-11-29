@@ -73,7 +73,7 @@ ostream& Base64::encode( istream& cleartext, unsigned int maxLineLength, ostream
     char byte2;
     char byte3;
     unique_ptr<codeJig> jig;
-    int lineLength = 0;
+    unsigned int lineLength = 0;
     
     while ( cleartext.get( byte1 ) )
     {
@@ -123,6 +123,7 @@ ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
 
     do
     {
+        byte1 = byte2 = byte3 = byte4 = '\0';
         if ( Base64::codeJig::getNextCipherBlock( ciphertext, byte1, byte2, byte3, byte4 ) )
         {
             jig = make_unique< codeJig >( byte1, byte2, byte3, byte4 );
@@ -136,9 +137,6 @@ ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
             }
 
             ciphertext.peek( );
-        } else 
-        {
-            throw invalid_argument( "Base64::decode first parameter, ciphertext, is not a valid base64 encoded stream." );
         }
     } while ( !(ciphertext.eof( )) );
     
@@ -242,7 +240,7 @@ const unsigned char Sextets::getQuantumValue( const unsigned int index )
 
 const bool Base64::codeJig::getNextCipherBlock( istream& source, char& byte1, char& byte2, char& byte3, char& byte4 )
 {
-    static string filter( "\r\n" );
+    static string filter( " \t\r\n" );
     char *cipherBlock[ Base64::codeJig::_CipherBlockLength ]  = { &byte1, &byte2, &byte3, &byte4 };
     int i = 0;
     char c = '\0';
