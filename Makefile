@@ -4,7 +4,7 @@
 # Variables to control Makefile operation
 
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -g
+CXXFLAGS = -std=c++11 -Wall -g
 
 # ****************************************************
 # Targets needed to bring the executable up to date
