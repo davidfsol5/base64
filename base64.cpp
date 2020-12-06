@@ -81,12 +81,15 @@ ostream& Base64::encode( istream& cleartext, unsigned int maxLineLength, ostream
         {
             if ( cleartext.get( byte3 ) )
             {
-                jig = std::make_unique< codeJig >( byte1, byte2, byte3 );
+                // jig = std::make_unique< codeJig >( byte1, byte2, byte3 ); // make_unique requires c++14 or greater
+                jig = unique_ptr< codeJig >( new codeJig( byte1, byte2, byte3 ) ); // POC only; exception unsafe
             } else {
-                jig = std::make_unique< codeJig >( byte1, byte2 );
+                // jig = std::make_unique< codeJig >( byte1, byte2 ); // make_unique requires c++14 or greater
+                jig = unique_ptr< codeJig >( new codeJig( byte1, byte2 ) ); // POC only; exception unsafe
            }
         } else {
-            jig = std::make_unique< codeJig >( byte1 );
+            // jig = std::make_unique< codeJig >( byte1 ); // make_unique requires c++14 or greater
+            jig = unique_ptr< codeJig >( new codeJig( byte1 ) ); // POC only; exception unsafe
         }
         for ( int i = 0; i < Base64::codeJig::_CipherBlockLength; i++ )
         {
@@ -126,7 +129,8 @@ ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
         byte1 = byte2 = byte3 = byte4 = '\0';
         if ( Base64::codeJig::getNextCipherBlock( ciphertext, byte1, byte2, byte3, byte4 ) )
         {
-            jig = make_unique< codeJig >( byte1, byte2, byte3, byte4 );
+            // jig = make_unique< codeJig >( byte1, byte2, byte3, byte4 ); // make_unique requires c++14 or greater
+            jig = unique_ptr< codeJig >( new codeJig( byte1, byte2, byte3, byte4 ) ); // POC only; exception unsafe
 
             for ( int i = 0; i < 3; i++ )
             {
