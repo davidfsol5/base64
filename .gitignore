@@ -3,5 +3,7 @@
 *.out
 *.code-workspace
 *.xlsx
+*.js
+*.wasm
 .vscode/*
 test-files/*

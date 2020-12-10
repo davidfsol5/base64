@@ -35,10 +35,24 @@ void decode_file( const string& in_path, string& out_path )
     cout << "decode_file( )..." << endl;
 
     ifstream referenceCiphertext( in_path, ios::in );
-    ofstream decodedCleartext( out_path, ios::out | ios::binary );
-    Base64::decode( referenceCiphertext, decodedCleartext );
-    referenceCiphertext.close( );
-    decodedCleartext.close( );
+    if ( referenceCiphertext.is_open( ) )
+    {
+        ofstream decodedCleartext( out_path, ios::out | ios::binary );
+        if ( decodedCleartext.is_open( ) )
+        {
+            Base64::decode( referenceCiphertext, decodedCleartext );
+            decodedCleartext.close( );
+        } else {
+            stringstream msg;
+            msg << "Error in decode_file(): Failed to open output file, " << out_path << ".";
+            throw  invalid_argument( msg.str( ) );
+        }
+        referenceCiphertext.close( );
+    } else {
+        stringstream msg;
+        msg << "Error in decode_file(): Failed to open input file, " << in_path << ".";
+        throw  invalid_argument( msg.str( ) );
+    }
 }
 
 
