@@ -62,9 +62,8 @@ int main(int argc, char const *argv[])
 
     try
     {
-        const string input( "./test-files/CaseCounts_CrudeRates_SelectedRegions_090620_2359.xlsx.b64.txt" );
-        string output( input );
-        output.erase( input.find( ".b64.txt" ), string::npos );
+        const string input( "input.data" );
+        string output( "output.data" );
 
         decode_file( input, output);
         

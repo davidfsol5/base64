@@ -20,7 +20,6 @@ SOFTWARE.
 
 #include "base64.hpp"
 #include "exceptions.hpp"
-// #include "../progress-cpp/include/progresscpp/ProgressBar.hpp"
 #include <memory>
 #include <sstream>
 #include <iostream>
@@ -119,12 +118,7 @@ ostream& Base64::decode( const string& ciphertext, ostream& cleartext )
 ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
 {
     unique_ptr<codeJig> jig;
-/*     ciphertext.seekg (0, ciphertext.end);
-    unsigned int length = ciphertext.tellg();
-    ciphertext.seekg (0, ciphertext.beg);
-    progresscpp::ProgressBar progressBar(length, 70, '#', '-');
-    unsigned int triggerModulo = length / 100;
- */
+
     char byte1;
     char byte2;
     char byte3;
@@ -137,8 +131,6 @@ ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
     cout << "\tbadbit is " << (ciphertext.bad( ) ? "set" : "not set") << endl;
     cout << "\tfailbit is " << (ciphertext.fail( ) ? "set" : "not set") << endl;
 
-//    progressBar.display( );
-    
     do
     {
         byte1 = byte2 = byte3 = byte4 = '\0';
@@ -153,19 +145,11 @@ ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
                 {
                     cleartext.put( jig->_QuantaOverlay._Cleartext.getQuantumValue( i ) );
                 }
-                // ++progressBar;
             }
            
-/*             if ( progressBar.getTicks( ) % triggerModulo == 0 )
-            {
-                progressBar.display( );
-            }
- */
             ciphertext.peek( );
         }
     } while ( ciphertext.good( ) );
-    
-    // progressBar.done( );
 
     return cleartext;
 }
