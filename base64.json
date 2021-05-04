@@ -17,5 +17,6 @@
   "memorySize":"25",
   "globalsSize":"8",
   "tableSize":"20",
-  "callSize":"10"
+  "callSize":"10",
+  "blockLimit":"2"
  }
