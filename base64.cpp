@@ -73,7 +73,7 @@ ostream& Base64::encode( istream& cleartext, unsigned int maxLineLength, ostream
     char byte2;
     char byte3;
     unique_ptr<codeJig> jig;
-    int lineLength = 0;
+    unsigned int lineLength = 0;
     
     while ( cleartext.get( byte1 ) )
     {
@@ -81,12 +81,15 @@ ostream& Base64::encode( istream& cleartext, unsigned int maxLineLength, ostream
         {
             if ( cleartext.get( byte3 ) )
             {
-                jig = std::make_unique< codeJig >( byte1, byte2, byte3 );
+                // jig = std::make_unique< codeJig >( byte1, byte2, byte3 ); // make_unique requires c++14 or greater
+                jig = unique_ptr< codeJig >( new codeJig( byte1, byte2, byte3 ) ); // POC only; exception unsafe
             } else {
-                jig = std::make_unique< codeJig >( byte1, byte2 );
+                // jig = std::make_unique< codeJig >( byte1, byte2 ); // make_unique requires c++14 or greater
+                jig = unique_ptr< codeJig >( new codeJig( byte1, byte2 ) ); // POC only; exception unsafe
            }
         } else {
-            jig = std::make_unique< codeJig >( byte1 );
+            // jig = std::make_unique< codeJig >( byte1 ); // make_unique requires c++14 or greater
+            jig = unique_ptr< codeJig >( new codeJig( byte1 ) ); // POC only; exception unsafe
         }
         for ( int i = 0; i < Base64::codeJig::_CipherBlockLength; i++ )
         {
@@ -121,11 +124,20 @@ ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
     char byte3;
     char byte4;
 
+    cout << "Base64::decode( )... " << endl;
+    cout << "ciphertext stream status is " << (ciphertext.good( ) ? "good" : "not good") << ":" << endl;
+    cout << "\teofbit is " << (ciphertext.eof( ) ? "set" : "not set") << endl;
+    cout << "\teofbit is " << (ciphertext.eof( ) ? "set" : "not set") << endl;
+    cout << "\tbadbit is " << (ciphertext.bad( ) ? "set" : "not set") << endl;
+    cout << "\tfailbit is " << (ciphertext.fail( ) ? "set" : "not set") << endl;
+
     do
     {
+        byte1 = byte2 = byte3 = byte4 = '\0';
         if ( Base64::codeJig::getNextCipherBlock( ciphertext, byte1, byte2, byte3, byte4 ) )
         {
-            jig = make_unique< codeJig >( byte1, byte2, byte3, byte4 );
+            // jig = make_unique< codeJig >( byte1, byte2, byte3, byte4 ); // make_unique requires c++14 or greater
+            jig = unique_ptr< codeJig >( new codeJig( byte1, byte2, byte3, byte4 ) ); // POC only; exception unsafe
 
             for ( int i = 0; i < 3; i++ )
             {
@@ -134,14 +146,11 @@ ostream& Base64::decode( istream& ciphertext, ostream& cleartext )
                     cleartext.put( jig->_QuantaOverlay._Cleartext.getQuantumValue( i ) );
                 }
             }
-
+           
             ciphertext.peek( );
-        } else 
-        {
-            throw invalid_argument( "Base64::decode first parameter, ciphertext, is not a valid base64 encoded stream." );
         }
-    } while ( !(ciphertext.eof( )) );
-    
+    } while ( ciphertext.good( ) );
+
     return cleartext;
 }
 
@@ -242,7 +251,7 @@ const unsigned char Sextets::getQuantumValue( const unsigned int index )
 
 const bool Base64::codeJig::getNextCipherBlock( istream& source, char& byte1, char& byte2, char& byte3, char& byte4 )
 {
-    static string filter( "\r\n" );
+    static string filter( " \t\r\n" );
     char *cipherBlock[ Base64::codeJig::_CipherBlockLength ]  = { &byte1, &byte2, &byte3, &byte4 };
     int i = 0;
     char c = '\0';
